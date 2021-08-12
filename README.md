@@ -1,34 +1,39 @@
-# base95
+# base79
 
-Textual representation of base 95 fractional numbers with arbitrary precision,
-intended to be used in real-time collaborative applications.
+This library provides a textual representation of base-79 fractional numbers with arbitrary precision, without a leading
+zero or decimal point. Given any two base-79 numbers, this library can also give you the midpoint. This can be useful in
+real-time collaborative applications and in applications where users can manually order records arbitrarily.
 
-[Documentation](https://docs.rs/base95)
+This is a fork of github.com/seungha-kim/base79 but simplified to 79 digits to not deal with some of the awkward
+characters at the ends of the printable ASCII range.
+
+[Documentation](https://docs.rs/base79)
 
 ## Example
 
 ```rust
-use base95::Base95;
+use base79::Base79;
 use std::str::FromStr;
 
 fn main() {
-    let n1 = Base95::mid();
-    assert_eq!(n1.to_string(), "O");
-    assert_eq!(n1.raw_digits(), vec![47]);
+    use base79::Base79;
+    use std::str::FromStr;
 
-    let n2 = Base95::avg_with_zero(&n1);
-    assert_eq!(n2.to_string(), "7");
-    assert_eq!(n2.raw_digits(), vec![23]);
+    let n1 = Base79::mid();
+    assert_eq!(n1.to_string(), "R");
+    assert_eq!(n1.raw_digits(), vec![39]);
 
-    let n3 = Base95::avg_with_one(&n1);
-    assert_eq!(n3.to_string(), "g");
-    assert_eq!(n3.raw_digits(), vec![71]);
+    let n2 = Base79::avg_with_zero(&n1);
+    assert_eq!(n2.to_string(), ">");
+    assert_eq!(n2.raw_digits(), vec![19]);
 
-    let n4 = Base95::avg(&n1, &n2);
-    assert_eq!(n4.to_string(), "C");
-    assert_eq!(n4.raw_digits(), vec![35]);
+    let n3 = Base79::avg_with_one(&n1);
+    assert_eq!(n3.to_string(), "f");
 
-    let n5 = Base95::from_str("j>Z= 4").unwrap();
-    assert_eq!(n5.raw_digits(), vec![74, 30, 58, 29, 0, 20]);
+    let n4 = Base79::avg(&n1, &n2);
+    assert_eq!(n4.to_string(), "H");
+
+    let n5 = Base79::from_str("s?Q^Z").unwrap();
+    assert_eq!(n5.raw_digits(), vec![72, 20, 38, 51, 47]);
 }
 ```

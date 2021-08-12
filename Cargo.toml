@@ -1,14 +1,16 @@
+cargo-features = ["edition2021"]
+
 [package]
-name = "base95"
-version = "0.1.1"
-authors = ["Kim Seungha <seungha.me@gmail.com>"]
-edition = "2018"
+name = "base79"
+version = "0.1.0"
+authors = ["Dmitriy Cherchenko", "Kim Seungha <seungha.me@gmail.com>"]
+edition = "2021"
 license = "MIT"
-description = "Textual representation of base 95 fractional numbers with arbitrary precision"
-repository = "https://github.com/seungha-kim/base95"
-categories = ["mathematics", "encoding"]
+description = "Textual representation of and utility functions for base-79 fractional numbers with arbitrary precision"
+repository = "https://github.com/dchenk/base79"
+categories = ["encoding", "arbitrary precision"]
 readme = "README.md"
-documentation = "https://docs.rs/base95/"
+documentation = "https://docs.rs/base79"
 
 [dev-dependencies]
-rand = "0.8.3"
+rand = "0.8.4"

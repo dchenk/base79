@@ -1,40 +1,43 @@
-//! Textual representation of base 95 fractional numbers with arbitrary precision,
-//! intended to be used in real-time collaborative applications.
+//! Textual representation of and utility functions for base-79 fractional numbers with arbitrary precision.
 //!
-//! It can only represent numbers between 0 and 1, exclusive.
-//! The leading `0.` is omitted.
+//! It can only represent numbers between 0 and 1, exclusive. The leading `0.` is omitted.
 //!
 //! Heavily inspired by [this article](https://www.figma.com/blog/realtime-editing-of-ordered-sequences/).
 //!
-//! ## Why 95?
+//! ## Why 79?
 //!
-//! - UTF-8, the most popular Unicode encoding scheme, can encode ASCII as is. (1 byte per character)
-//! - ASCII has 95 printable characters in total, from space to tilde.
+//! - UTF-8 can encode ASCII with 1 byte per character.
+//! - ASCII has 95 printable characters in total, but some of them will seem really odd if they were
+//!   to surface to end-users. We could take just the alphanumeric characters (62), but that seems
+//!   too limited. We take the middle 79 to exclude some of the characters on the ends, such as the
+//!   space, which isn't very conspicuous when reading, and quote marks, which often need escaping.
 //!
 //! ## Example
 //!
 //! ```
-//! use base95::Base95;
+//! use base79::Base79;
 //! use std::str::FromStr;
 //!
-//! let n1 = Base95::mid();
-//! assert_eq!(n1.to_string(), "O");
-//! assert_eq!(n1.raw_digits(), vec![47]);
+//! let n1 = Base79::mid();
+//! assert_eq!(n1.to_string(), "R");
+//! assert_eq!(n1.raw_digits(), vec![39]);
+//! assert_eq!(39 + 1 + 39, 79); // How we got 39.
 //!
-//! let n2 = Base95::avg_with_zero(&n1);
-//! assert_eq!(n2.to_string(), "7");
-//! assert_eq!(n2.raw_digits(), vec![23]);
+//! let n2 = Base79::avg_with_zero(&n1);
+//! assert_eq!(n2.to_string(), ">");
+//! assert_eq!(n2.raw_digits(), vec![19]);
+//! assert_eq!(19.5*2.0 + 1.0 + 19.5*2.0, 79.0); // How we got 19.
 //!
-//! let n3 = Base95::avg_with_one(&n1);
-//! assert_eq!(n3.to_string(), "g");
-//! assert_eq!(n3.raw_digits(), vec![71]);
+//! let n3 = Base79::avg_with_one(&n1);
+//! assert_eq!(n3.to_string(), "f");
+//! assert_eq!(n3.raw_digits(), vec![59]);
 //!
-//! let n4 = Base95::avg(&n1, &n2);
-//! assert_eq!(n4.to_string(), "C");
-//! assert_eq!(n4.raw_digits(), vec![35]);
+//! let n4 = Base79::avg(&n1, &n2);
+//! assert_eq!(n4.to_string(), "H");
+//! assert_eq!(n4.raw_digits(), vec![29]);
 //!
-//! let n5 = Base95::from_str("j>Z= 4").unwrap();
-//! assert_eq!(n5.raw_digits(), vec![74, 30, 58, 29, 0, 20]);
+//! let n5 = Base79::from_str("s?Q^Z").unwrap();
+//! assert_eq!(n5.raw_digits(), vec![72, 20, 38, 51, 47]);
 //! ```
 //!
 //! ## Why is `avg` imprecise?
@@ -44,14 +47,14 @@
 //!
 //! Of course, the result is deterministic, i.e., if the input is same, the output will always be same.
 
-mod digits;
-
 use crate::digits::Digits;
 
-const ASCII_MIN: u8 = 32; // space
+mod digits;
+
+const MINIMUM: u8 = '+' as u8;
 
 #[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq)]
-pub struct Base95(String);
+pub struct Base79(String);
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum ParseError {
@@ -59,9 +62,9 @@ pub enum ParseError {
     EmptyNotAllowed,
 }
 
-impl Base95 {
-    /// Create a fractional number of base 95, which represents `47 / 95`.
-    /// The only way to create Base95 instance without any arguments.
+impl Base79 {
+    /// Create a fractional number of base 79 in the middle of the 79-digit alphabet.
+    /// The only way to create a Base79 instance without any arguments.
     pub fn mid() -> Self {
         Digits::mid().into()
     }
@@ -83,13 +86,13 @@ impl Base95 {
     }
 }
 
-impl ToString for Base95 {
+impl ToString for Base79 {
     fn to_string(&self) -> String {
         self.0.clone()
     }
 }
 
-impl std::str::FromStr for Base95 {
+impl std::str::FromStr for Base79 {
     type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -98,38 +101,39 @@ impl std::str::FromStr for Base95 {
         } else if s.chars().any(|c| !c.is_ascii() || c.is_ascii_control()) {
             Err(ParseError::InvalidChar)
         } else {
-            Ok(Base95(s.to_owned()))
+            Ok(Base79(s.to_owned()))
         }
     }
 }
 
-impl From<Digits> for Base95 {
+impl From<Digits> for Base79 {
     fn from(digits: Digits) -> Self {
-        Self(String::from_utf8(digits.0.iter().map(|x| x + ASCII_MIN).collect()).unwrap())
+        Self(String::from_utf8(digits.0.iter().map(|x| x + MINIMUM).collect()).unwrap())
     }
 }
 
-impl From<&Base95> for Digits {
-    fn from(base95: &Base95) -> Self {
-        Self(base95.0.as_bytes().iter().map(|x| x - ASCII_MIN).collect())
+impl From<&Base79> for Digits {
+    fn from(base79: &Base79) -> Self {
+        Self(base79.0.as_bytes().iter().map(|x| x - MINIMUM).collect())
     }
 }
 
-impl From<Base95> for String {
-    fn from(base95: Base95) -> Self {
-        base95.0
+impl From<Base79> for String {
+    fn from(base79: Base79) -> Self {
+        base79.0
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::str::FromStr;
 
+    use super::*;
+
     #[test]
-    fn it_works() {
-        assert_eq!(Base95::from_str(""), Err(ParseError::EmptyNotAllowed));
-        assert_eq!(Base95::from_str("한글"), Err(ParseError::InvalidChar));
-        assert_eq!(Base95::from_str("O").unwrap(), Base95::mid());
+    fn test_from_str() {
+        assert_eq!(Base79::from_str(""), Err(ParseError::EmptyNotAllowed));
+        assert_eq!(Base79::from_str("한글"), Err(ParseError::InvalidChar));
+        assert_eq!(Base79::from_str("R").unwrap(), Base79::mid());
     }
 }

@@ -1,17 +1,17 @@
-const BASE: u8 = 95;
+const BASE: u8 = 79;
 const MID: u8 = BASE / 2;
 
 #[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub(crate) struct Digits(pub(crate) Vec<u8>);
 
-/// represents rational number of base 95 between 0 and 1. leading "0." is omitted.
+/// represents rational number of base 79 between 0 and 1. leading "0." is omitted.
 impl Digits {
     pub fn mid() -> Self {
         Self(vec![MID])
     }
 
     pub fn avg(lhs: &Self, rhs: &Self) -> Self {
-        // NOTE: u8 has enough capacity which can contain double of 95
+        // NOTE: u8 has enough capacity which can contain double of 79
         let half = Self::naive_add(&lhs, &rhs).half();
 
         let (larger, smaller) = if lhs > rhs { (lhs, rhs) } else { (rhs, lhs) };
@@ -30,7 +30,7 @@ impl Digits {
     }
 
     pub fn one() -> Self {
-        Self(vec![95])
+        Self(vec![79])
     }
 
     fn half(&self) -> Self {
@@ -97,9 +97,9 @@ mod tests {
     #[test]
     fn half() {
         assert_eq!(Digits(vec![2]).half(), Digits(vec![1]));
-        assert_eq!(Digits(vec![1]).half(), Digits(vec![0, 47]));
+        assert_eq!(Digits(vec![1]).half(), Digits(vec![0, 39]));
         assert_eq!(Digits(vec![2, 2]).half(), Digits(vec![1, 1]));
-        assert_eq!(Digits(vec![2, 1]).half(), Digits(vec![1, 0, 47]));
+        assert_eq!(Digits(vec![2, 1]).half(), Digits(vec![1, 0, 39]));
     }
 
     #[test]
@@ -148,13 +148,18 @@ mod tests {
         );
 
         assert_eq!(
+            Digits::avg(&Digits(vec![39]), &Digits(vec![40])),
+            Digits(vec![39, 39])
+        );
+
+        assert_eq!(
             Digits::avg(&Digits(vec![47]), &Digits(vec![48])),
-            Digits(vec![47, 47])
+            Digits(vec![47, 39])
         );
 
         assert_eq!(
             Digits::avg(&Digits(vec![0]), &Digits(vec![1])),
-            Digits(vec![0, 47])
+            Digits(vec![0, 39])
         );
     }
 }
